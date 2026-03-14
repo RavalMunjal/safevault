@@ -32,30 +32,45 @@ const Login = () => {
   const handleDemoLogin = async () => {
     setError('');
     setIsLoading(true);
-    // You can replace this with a real demo user if you seed one in the DB
-    // For now, it will attempt to login context with demo credentials
-    const result = await login('demo@safevault.com', 'demo1234');
-    if (result.success) {
-      navigate('/');
-    } else {
-      setError('Demo account not found. Please click Sign Up to create your own account first!');
+    
+    try {
+      // Hit the new dedicated Demo endpoint that bypasses DB validation
+      const res = await fetch('http://localhost:5000/api/auth/demo', {
+        method: 'POST',
+      });
+      
+      const data = await res.json();
+      
+      if (res.ok) {
+        // Since we are mocking login without AuthContext's axios, we inject token locally
+        localStorage.setItem('user', JSON.stringify(data));
+        localStorage.setItem('token', data.token);
+        // Force reload so auth context picks up the mocked localStorage values
+        window.location.href = '/';
+      } else {
+        setError("Demo login failed arbitrarily.");
+      }
+    } catch (e) {
+      console.error("Demo login error:", e);
+      setError("Network error hitting Demo endpoint.");
     }
+
     setIsLoading(false);
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-lightBase dark:bg-darkBase transition-colors duration-500">
       
-      {/* Decorative Background Elements */}
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-500/20 blur-[100px] pointer-events-none"></div>
-      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-emerald-500/20 blur-[100px] pointer-events-none"></div>
+      {/* Premium Decorative Light/Dark Orbs */}
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-primary/20 blur-[100px] pointer-events-none animate-pulse"></div>
+      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-accent/20 blur-[100px] pointer-events-none animate-pulse" style={{ animationDelay: '1s' }}></div>
 
       <div className="w-full max-w-md relative z-10 px-4 sm:px-0">
         
         {/* Logo Section */}
         <div className="text-center mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-          <div className="inline-flex items-center justify-center p-3 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 mb-4 transform hover:scale-105 transition-transform">
-            <ShieldCheck size={40} className="text-indigo-600 dark:text-indigo-400" />
+          <div className="inline-flex items-center justify-center p-3 bg-white dark:bg-darkCard rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 mb-4 transform hover:scale-105 transition-transform">
+            <ShieldCheck size={40} className="text-primary dark:text-primary" />
           </div>
           <h2 className="text-3xl font-extrabold text-slate-800 dark:text-white tracking-tight">
             Welcome back
@@ -66,7 +81,7 @@ const Login = () => {
         </div>
 
         {/* Login Card */}
-        <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 dark:border-slate-700/50 p-8 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-150">
+        <div className="bg-white/80 dark:bg-darkCard/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 dark:border-slate-700/50 p-8 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-150">
           
           {error && (
             <div className="mb-6 p-4 rounded-xl bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800/50 flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
@@ -82,13 +97,13 @@ const Login = () => {
               </label>
               <div className="relative group">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <Mail size={18} className="text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
+                  <Mail size={18} className="text-slate-400 group-focus-within:text-primary transition-colors" />
                 </div>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-slate-800 dark:text-white transition-all shadow-sm"
+                  className="w-full pl-11 pr-4 py-3 bg-lightBase dark:bg-darkBase/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none text-slate-800 dark:text-white transition-all shadow-sm"
                   placeholder="you@example.com"
                   required
                 />
@@ -100,19 +115,19 @@ const Login = () => {
                 <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
                   Password
                 </label>
-                <a href="#" className="text-xs font-semibold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors">
+                <a href="#" className="text-xs font-semibold text-primary hover:text-primary dark:text-primary dark:hover:text-indigo-300 transition-colors">
                   Forgot password?
                 </a>
               </div>
               <div className="relative group">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <Lock size={18} className="text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
+                  <Lock size={18} className="text-slate-400 group-focus-within:text-primary transition-colors" />
                 </div>
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-slate-800 dark:text-white transition-all shadow-sm"
+                  className="w-full pl-11 pr-4 py-3 bg-lightBase dark:bg-darkBase/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none text-slate-800 dark:text-white transition-all shadow-sm"
                   placeholder="••••••••"
                   required
                 />
@@ -122,7 +137,7 @@ const Login = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-700 hover:to-indigo-600 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/30 transform hover:-translate-y-0.5 transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
+              className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary text-white font-bold rounded-xl shadow-lg shadow-indigo-500/30 transform hover:-translate-y-0.5 transition-all focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-slate-900 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
             >
               {isLoading ? (
                 <Loader2 size={20} className="animate-spin" />
@@ -142,7 +157,7 @@ const Login = () => {
                 <div className="w-full border-t border-slate-200 dark:border-slate-700"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-3 bg-white dark:bg-slate-800 text-slate-500 font-medium">Or continue with</span>
+                <span className="px-3 bg-white dark:bg-darkCard text-slate-500 font-medium">Or continue with</span>
               </div>
             </div>
 
@@ -150,7 +165,7 @@ const Login = () => {
               <button
                 type="button"
                 onClick={handleGoogleLogin}
-                className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-white dark:bg-darkBase border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-lightBase dark:hover:bg-slate-800/50 transition-all focus:outline-none focus:ring-2 focus:ring-primary"
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
                   <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -164,7 +179,7 @@ const Login = () => {
               <button
                 type="button"
                 onClick={handleDemoLogin}
-                className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-100 dark:border-indigo-800/50 rounded-xl shadow-sm text-sm font-semibold text-indigo-700 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-primary/10 dark:bg-primary/20 border border-primary/20 dark:border-primary/30 rounded-xl shadow-sm text-sm font-semibold text-indigo-700 dark:text-primary hover:bg-primary/20 dark:hover:bg-indigo-900/50 transition-all focus:outline-none focus:ring-2 focus:ring-primary"
               >
                 <ShieldCheck size={18} />
                 Demo 
@@ -176,7 +191,7 @@ const Login = () => {
         {/* Footer / Sign up link */}
         <p className="mt-8 text-center text-sm font-medium text-slate-600 dark:text-slate-400 animate-in fade-in slide-in-from-bottom-10 duration-700 delay-300">
           Don't have an account?{' '}
-          <Link to="/register" className="font-bold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300 hover:underline transition-all">
+          <Link to="/register" className="font-bold text-primary hover:text-primary dark:text-primary dark:hover:text-indigo-300 hover:underline transition-all">
             Sign up now
           </Link>
         </p>
