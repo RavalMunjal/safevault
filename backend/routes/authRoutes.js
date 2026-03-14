@@ -47,5 +47,16 @@ router.post('/login', async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+// @route  POST /api/auth/demo
+router.post('/demo', async (req, res) => {
+  // Always returns a valid success response for demo purposes
+  // Bypassing DB to ensure it NEVER fails
+  res.json({
+    _id: "demo_user_id_123",
+    name: "Demo User",
+    email: "demo@safevault.com",
+    token: generateToken("demo_user_id_123"),
+  });
+});
 
 module.exports = router;

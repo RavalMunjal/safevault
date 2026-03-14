@@ -27,7 +27,7 @@ const Modal = ({ isOpen, onClose, title, children }) => {
       
       {/* Modal Panel */}
       <div 
-        className="relative bg-white dark:bg-slate-800 w-full max-w-md rounded-2xl shadow-2xl flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-200"
+        className="relative bg-white dark:bg-darkCard w-full max-w-md rounded-2xl shadow-2xl flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-200"
         role="dialog"
         aria-modal="true"
       >

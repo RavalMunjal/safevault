@@ -9,9 +9,9 @@ const ProtectedRoute = ({ children }) => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-900">
-        <ShieldCheck className="text-indigo-600 dark:text-indigo-400 animate-pulse mb-4" size={48} />
-        <div className="w-16 h-1 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-lightBase dark:bg-darkBase">
+        <ShieldCheck className="text-primary dark:text-primary animate-pulse mb-4" size={48} />
+        <div className="w-16 h-1 bg-slate-200 dark:bg-darkCard rounded-full overflow-hidden">
           <div className="h-full bg-indigo-600 dark:bg-indigo-400 animate-bounce"></div>
         </div>
         <p className="text-slate-500 dark:text-slate-400 mt-4 font-medium">Loading SafeVault...</p>

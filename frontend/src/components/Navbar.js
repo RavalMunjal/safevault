@@ -40,13 +40,13 @@ const Navbar = () => {
   const isActive = (path) => location.pathname === path;
 
   return (
-    <nav className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-50 transition-colors duration-300">
+    <nav className="bg-white dark:bg-darkBase border-b border-slate-200 dark:border-slate-800 sticky top-0 z-50 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           {/* Logo */}
           <div className="flex items-center">
             <Link to="/" className="flex items-center gap-2">
-              <ShieldCheck className="text-indigo-600 dark:text-indigo-400" size={32} />
+              <ShieldCheck className="text-primary dark:text-primary" size={32} />
               <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-emerald-500">
                 SafeVault
               </span>
@@ -62,7 +62,7 @@ const Navbar = () => {
                   to={link.path}
                   className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                     isActive(link.path)
-                      ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300'
+                      ? 'bg-primary/10 text-indigo-700 dark:bg-primary/20 dark:text-primary/80'
                       : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
                   }`}
                 >
@@ -98,7 +98,7 @@ const Navbar = () => {
               </div>
             ) : (
               <div className="flex space-x-2">
-                <Link to="/login" className="px-4 py-2 text-sm font-medium text-indigo-600 hover:text-indigo-700 dark:text-indigo-400">
+                <Link to="/login" className="px-4 py-2 text-sm font-medium text-primary hover:text-indigo-700 dark:text-primary">
                   Login
                 </Link>
                 <Link to="/register" className="btn-primary text-sm">
@@ -128,7 +128,7 @@ const Navbar = () => {
 
       {/* Mobile Navigation Menu */}
       {isMobileMenuOpen && (
-        <div className="md:hidden border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+        <div className="md:hidden border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-darkBase">
           <div className="px-2 pt-2 pb-3 space-y-1">
             {isAuthenticated ? (
               <>
@@ -142,8 +142,8 @@ const Navbar = () => {
                     onClick={() => setIsMobileMenuOpen(false)}
                     className={`flex items-center gap-3 px-3 py-3 rounded-md text-base font-medium ${
                       isActive(link.path)
-                        ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300'
-                        : 'text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800'
+                        ? 'bg-primary/10 text-indigo-700 dark:bg-indigo-900/40 dark:text-primary/80'
+                        : 'text-slate-600 hover:bg-lightBase dark:text-slate-300 dark:hover:bg-slate-800'
                     }`}
                   >
                     {link.icon}
