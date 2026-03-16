@@ -1,8 +1,8 @@
 /* CSS Reset & Variables */
 .premium-login-page {
-  --bg-main: #020b18;
-  --bg-panel-1: #030f20;
-  --bg-panel-2: #061628;
+  --bg-main: #000000;
+  --bg-panel-1: #000000;
+  --bg-panel-2: #000000;
   
   --accent-blue: #1a6cf0;
   --bright-blue: #2a7fff;
@@ -44,13 +44,17 @@
   flex: 1.1;
   background-color: var(--bg-panel-1);
   position: relative;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 3rem 10% 2.5rem;
+  padding: 2.5rem 8% 2rem;
   border-right: 0.5px solid var(--border-thin);
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
 }
+.premium-login-page .left-panel::-webkit-scrollbar { display: none; } /* Chrome/Safari */
 
 .premium-login-page .right-panel {
   flex: 0.9;
@@ -89,8 +93,8 @@
 .premium-login-page .logo-container {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
-  margin-bottom: 3rem;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
 }
 
 .premium-login-page .logo-box {
@@ -128,11 +132,12 @@
 
 /* Typography Left Panel */
 .premium-login-page h1 {
-  font-size: 3.5rem;
-  line-height: 1.1;
-  font-weight: 600;
-  letter-spacing: -1.5px;
-  margin-bottom: 1.5rem;
+  font-family: var(--font-ui);
+  font-size: clamp(2.4rem, 3.8vw, 3.6rem);
+  line-height: 1.15;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  margin-bottom: 1.25rem;
 }
 
 .premium-login-page h1 span {
@@ -143,10 +148,10 @@
 }
 
 .premium-login-page .subtitle {
-  font-size: 1.125rem;
+  font-size: 1rem;
   color: var(--text-muted);
   line-height: 1.6;
-  margin-bottom: 4rem;
+  margin-bottom: 2rem;
   max-width: 480px;
 }
 
@@ -154,7 +159,7 @@
 .premium-login-page .features {
   display: flex;
   flex-direction: column;
-  gap: 1.8rem;
+  gap: 1.1rem;
 }
 
 .premium-login-page .feature-row {
@@ -202,9 +207,10 @@
   color: var(--text-subtle);
   position: relative;
   z-index: 2;
-  margin-top: 2.5rem;
-  padding-top: 1.5rem;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
   border-top: 0.5px solid var(--border-thin);
+  flex-shrink: 0;
 }
 
 /* Right Panel - Three.js Canvas */

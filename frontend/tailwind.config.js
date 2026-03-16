@@ -9,7 +9,7 @@ module.exports = {
       colors: {
         primary: '#4f46e5', // Rich Indigo
         accent: '#059669', // Emerald
-        darkBase: '#020617', // Very dark slate (near black but richer)
+        darkBase: '#000000', // Pure black
         darkCard: '#0f172a', // Slate 900
         lightBase: '#f8fafc', // Slate 50
         lightCard: '#ffffff', // Pure white for cards in light mode

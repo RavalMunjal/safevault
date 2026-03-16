@@ -1,190 +1,224 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
-import { UserCircle, Save, CheckCircle, Loader2 } from 'lucide-react';
+import '../styles/SvPage.css';
+
+const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+
+const SaveIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+    <polyline points="17 21 17 13 7 13 7 21"/>
+    <polyline points="7 3 7 8 15 8"/>
+  </svg>
+);
 
 const Profile = () => {
-  const [profile, setProfile] = useState({
+  const { user } = useAuth();
+
+  const [form, setForm] = useState({
     bloodGroup: '',
     allergies: '',
     medicalConditions: '',
     hospitalPreference: '',
-    additionalNotes: ''
+    additionalNotes: '',
   });
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
-  const [successMsg, setSuccessMsg] = useState('');
+
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [toast, setToast] = useState({ show: false, msg: '', ok: true });
 
   useEffect(() => {
-    fetchProfile();
+    api.get('/profile')
+      .then(r => {
+        if (r.data) {
+          setForm({
+            bloodGroup:        r.data.bloodGroup || '',
+            allergies:         Array.isArray(r.data.allergies) ? r.data.allergies.join(', ') : (r.data.allergies || ''),
+            medicalConditions: Array.isArray(r.data.medicalConditions) ? r.data.medicalConditions.join(', ') : (r.data.medicalConditions || ''),
+            hospitalPreference: r.data.hospitalPreference || '',
+            additionalNotes:   r.data.additionalNotes || '',
+          });
+        }
+      })
+      .catch(() => {}) // no profile yet – that's fine
+      .finally(() => setLoading(false));
   }, []);
 
-  const fetchProfile = async () => {
-    try {
-      const res = await api.get('/profile');
-      if (res.data) {
-        setProfile({
-          bloodGroup: res.data.bloodGroup || '',
-          allergies: res.data.allergies?.join(', ') || '',
-          medicalConditions: res.data.medicalConditions?.join(', ') || '',
-          hospitalPreference: res.data.hospitalPreference || '',
-          additionalNotes: res.data.additionalNotes || ''
-        });
-      }
-    } catch (error) {
-      console.log('No profile found, will create one on save');
-    } finally {
-      setIsLoading(false);
-    }
+  const showToast = (msg, ok = true) => {
+    setToast({ show: true, msg, ok });
+    setTimeout(() => setToast(t => ({ ...t, show: false })), 3500);
   };
 
-  const handleChange = (e) => {
-    setProfile({ ...profile, [e.target.name]: e.target.value });
-  };
+  const handleChange = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
-    setIsSaving(true);
-    setSuccessMsg('');
-    
+    setSaving(true);
     try {
-      // Convert comma strings to arrays for API
       const payload = {
-        ...profile,
-        allergies: profile.allergies ? profile.allergies.split(',').map(s => s.trim()) : [],
-        medicalConditions: profile.medicalConditions ? profile.medicalConditions.split(',').map(s => s.trim()) : [],
+        bloodGroup:         form.bloodGroup,
+        hospitalPreference: form.hospitalPreference,
+        additionalNotes:    form.additionalNotes,
+        allergies:          form.allergies ? form.allergies.split(',').map(s => s.trim()).filter(Boolean) : [],
+        medicalConditions:  form.medicalConditions ? form.medicalConditions.split(',').map(s => s.trim()).filter(Boolean) : [],
       };
-      
       await api.put('/profile', payload);
-      setSuccessMsg('Profile saved successfully!');
-      
-      // Clear success message after 3 seconds
-      setTimeout(() => setSuccessMsg(''), 3000);
-    } catch (error) {
-      console.error('Error saving profile:', error);
+      showToast('Profile saved successfully!', true);
+    } catch (err) {
+      console.error('Profile save error:', err);
+      showToast(err.response?.data?.message || 'Failed to save profile', false);
     } finally {
-      setIsSaving(false);
+      setSaving(false);
     }
   };
 
-  if (isLoading) {
+  const userInitials = user?.name
+    ? user.name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase()
+    : 'U';
+
+  if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <Loader2 className="animate-spin text-primary" size={40} />
+      <div className="sv-page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
+        <div style={{ textAlign: 'center' }}>
+          <div className="sv-spinner" style={{ width: '36px', height: '36px', margin: '0 auto 1rem', borderTopColor: '#2a7fff' }}></div>
+          <p style={{ color: '#7ea8cc', fontFamily: "'Space Mono', monospace", fontSize: '0.8rem' }}>Loading profile…</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 animate-in slide-in-from-bottom-8 fade-in duration-500">
-      
-      <div className="md:flex md:items-center md:justify-between mb-6">
-        <div>
-          <h2 className="text-3xl font-bold text-slate-800 dark:text-white flex items-center gap-3">
-            <UserCircle className="text-primary" size={32} />
-            Emergency Profile
-          </h2>
-          <p className="mt-2 text-slate-500 dark:text-slate-400">
-            This core information provides vital context to first responders.
-          </p>
+    <div className="sv-page">
+
+      {/* Header */}
+      <div className="sv-page-header">
+        <div className="sv-page-title">
+          <div style={{
+            width: 52, height: 52, borderRadius: '50%',
+            background: 'linear-gradient(135deg,#1a6cf0,#2a7fff)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontWeight: 700, fontSize: '1.2rem', color: '#fff',
+            border: '2px solid rgba(42,127,255,0.35)',
+            boxShadow: '0 0 14px rgba(42,127,255,0.3)',
+            flexShrink: 0,
+          }}>
+            {userInitials}
+          </div>
+          <div>
+            <h1 style={{ margin: 0, fontSize: '1.55rem', fontWeight: 700, color: '#e8f0fe' }}>Emergency Profile</h1>
+            <p style={{ margin: 0, fontSize: '0.84rem', color: '#7ea8cc' }}>Critical medical info for first responders</p>
+          </div>
         </div>
       </div>
 
-      <div className="card">
-        {successMsg && (
-          <div className="mb-6 p-4 bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800 flex items-center gap-3 rounded-lg animate-in fade-in slide-in-from-top-2">
-            <CheckCircle className="text-emerald-500" size={20} />
-            <p className="text-sm font-medium text-emerald-700 dark:text-emerald-300">{successMsg}</p>
-          </div>
-        )}
+      {/* Toast */}
+      {toast.show && (
+        <div className={`sv-toast ${toast.ok ? 'sv-toast-success' : 'sv-toast-error'}`} style={{ marginBottom: '1.5rem' }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={toast.ok ? '#10b981' : '#f43f5e'} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            {toast.ok
+              ? <polyline points="20 6 9 17 4 12"/>
+              : <><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></>
+            }
+          </svg>
+          <p>{toast.msg}</p>
+        </div>
+      )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="label-text">Blood Group</label>
-              <select
-                name="bloodGroup"
-                value={profile.bloodGroup}
-                onChange={handleChange}
-                className="input-field"
-              >
-                <option value="">Select Blood Group</option>
-                <option value="A+">A+</option>
-                <option value="A-">A-</option>
-                <option value="B+">B+</option>
-                <option value="B-">B-</option>
-                <option value="AB+">AB+</option>
-                <option value="AB-">AB-</option>
-                <option value="O+">O+</option>
-                <option value="O-">O-</option>
-              </select>
+      <form onSubmit={handleSubmit}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+
+          {/* ── Left Column ── */}
+          <div>
+            {/* Blood Group */}
+            <p className="sv-section-lbl">Blood Type</p>
+            <div className="sv-card" style={{ marginBottom: '1.5rem' }}>
+              <div className="sv-blood-grid">
+                {BLOOD_GROUPS.map(bg => (
+                  <button
+                    key={bg} type="button"
+                    className={`sv-blood-btn ${form.bloodGroup === bg ? 'active' : ''}`}
+                    onClick={() => setForm(f => ({ ...f, bloodGroup: bg }))}
+                  >{bg}</button>
+                ))}
+              </div>
+              {form.bloodGroup
+                ? <p style={{ marginTop: '1rem', textAlign: 'center', color: '#f43f5e', fontFamily: "'Space Mono',monospace", fontSize: '0.8rem' }}>
+                    Selected: <strong>{form.bloodGroup}</strong>
+                  </p>
+                : <p style={{ marginTop: '1rem', textAlign: 'center', color: '#3a6080', fontFamily: "'Space Mono',monospace", fontSize: '0.78rem' }}>
+                    No blood group selected
+                  </p>
+              }
             </div>
 
-            <div>
-              <label className="label-text">Hospital Preference</label>
-              <input
-                type="text"
-                name="hospitalPreference"
-                value={profile.hospitalPreference}
-                onChange={handleChange}
-                placeholder="e.g. Apollo Hospital, City Center"
-                className="input-field"
-              />
+            {/* Hospital */}
+            <p className="sv-section-lbl">Hospital Preference</p>
+            <div className="sv-card">
+              <div className="sv-form-group" style={{ marginBottom: 0 }}>
+                <label className="sv-form-label">Preferred Hospital / Clinic</label>
+                <input
+                  className="sv-form-input"
+                  name="hospitalPreference"
+                  value={form.hospitalPreference}
+                  onChange={handleChange}
+                  placeholder="e.g. Apollo Hospital, City Center"
+                />
+              </div>
             </div>
           </div>
 
+          {/* ── Right Column ── */}
           <div>
-            <label className="label-text">Allergies (comma separated)</label>
-            <textarea
-              name="allergies"
-              value={profile.allergies}
-              onChange={handleChange}
-              rows="2"
-              placeholder="e.g. Peanuts, Penicillin, Dust"
-              className="input-field"
-            ></textarea>
-          </div>
+            <p className="sv-section-lbl">Medical Details</p>
+            <div className="sv-card">
+              <div className="sv-form-group">
+                <label className="sv-form-label">Known Allergies <span style={{ color: '#3a6080' }}>(comma separated)</span></label>
+                <textarea
+                  className="sv-form-textarea"
+                  name="allergies"
+                  value={form.allergies}
+                  onChange={handleChange}
+                  rows={2}
+                  placeholder="e.g. Penicillin, Peanuts, Dust, Latex"
+                />
+              </div>
 
-          <div>
-            <label className="label-text">Pre-existing Medical Conditions (comma separated)</label>
-            <textarea
-              name="medicalConditions"
-              value={profile.medicalConditions}
-              onChange={handleChange}
-              rows="2"
-              placeholder="e.g. Diabetes Type 2, Asthma"
-              className="input-field"
-            ></textarea>
-          </div>
+              <div className="sv-form-group">
+                <label className="sv-form-label">Pre-existing Conditions <span style={{ color: '#3a6080' }}>(comma separated)</span></label>
+                <textarea
+                  className="sv-form-textarea"
+                  name="medicalConditions"
+                  value={form.medicalConditions}
+                  onChange={handleChange}
+                  rows={2}
+                  placeholder="e.g. Asthma, Diabetes Type 2, Hypertension"
+                />
+              </div>
 
-          <div>
-            <label className="label-text">Additional Notes for Responders</label>
-            <textarea
-              name="additionalNotes"
-              value={profile.additionalNotes}
-              onChange={handleChange}
-              rows="4"
-              placeholder="Any other critical instructions or information..."
-              className="input-field"
-            ></textarea>
+              <div className="sv-form-group" style={{ marginBottom: 0 }}>
+                <label className="sv-form-label">Additional Notes for Responders</label>
+                <textarea
+                  className="sv-form-textarea"
+                  name="additionalNotes"
+                  value={form.additionalNotes}
+                  onChange={handleChange}
+                  rows={4}
+                  placeholder="e.g. Organ donor, advance directives, implanted devices, do-not-resuscitate instructions…"
+                />
+              </div>
+            </div>
           </div>
+        </div>
 
-          <div className="flex justify-end pt-4 border-t border-slate-100 dark:border-slate-700">
-            <button
-              type="submit"
-              disabled={isSaving}
-              className="btn-primary flex items-center gap-2"
-            >
-              {isSaving ? (
-                <Loader2 size={18} className="animate-spin" />
-              ) : (
-                <Save size={18} />
-              )}
-              Save Profile
-            </button>
-          </div>
-        </form>
-      </div>
+        {/* Save Button */}
+        <div style={{ marginTop: '1.75rem', display: 'flex', justifyContent: 'flex-end' }}>
+          <button type="submit" className="sv-btn sv-btn-primary" disabled={saving} style={{ padding: '0.7rem 2rem', fontSize: '0.95rem' }}>
+            {saving ? <span className="sv-spinner"></span> : <SaveIcon />}
+            {saving ? 'Saving…' : 'Save Profile'}
+          </button>
+        </div>
+      </form>
 
     </div>
   );
