@@ -49,14 +49,25 @@ router.post('/login', async (req, res) => {
 });
 // @route  POST /api/auth/demo
 router.post('/demo', async (req, res) => {
-  // Always returns a valid success response for demo purposes
-  // Bypassing DB to ensure it NEVER fails
-  res.json({
-    _id: "demo_user_id_123",
-    name: "Demo User",
-    email: "demo@safevault.com",
-    token: generateToken("demo_user_id_123"),
-  });
+  try {
+    // Find or create a real demo user in MongoDB so all routes work
+    let demoUser = await User.findOne({ email: 'demo@safevault.com' });
+    if (!demoUser) {
+      demoUser = await User.create({
+        name: 'Demo User',
+        email: 'demo@safevault.com',
+        password: 'demo_password_safevault_2025',
+      });
+    }
+    res.json({
+      _id: demoUser._id,
+      name: demoUser.name,
+      email: demoUser.email,
+      token: generateToken(demoUser._id),
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 });
 
 module.exports = router;

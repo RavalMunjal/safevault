@@ -1,263 +1,223 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api/axios';
-import { Users, Plus, Edit2, Trash2, Phone, Mail, UserCheck, Search, Loader2 } from 'lucide-react';
-import Modal from '../components/Modal';
+import '../styles/SvPage.css';
 
-const Contacts = () => {
-  const [contacts, setContacts] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  
-  // Modal state
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentContact, setCurrentContact] = useState(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+// Inline SVG helpers
+const PhoneIcon = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.62 3.38 2 2 0 0 1 3.59 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.56a16 16 0 0 0 5.55 5.55l1.62-1.62a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>;
+const MailIcon = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>;
+const StarIcon = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>;
+const EditIcon = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>;
+const TrashIcon = () => <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>;
+const PlusIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>;
+const UsersIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>;
+const XIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
+const SearchIcon = () => <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>;
 
-  // Form state
-  const [formData, setFormData] = useState({
-    name: '',
-    relation: '',
-    phone: '',
-    email: '',
-    isTrusted: false,
-    notes: ''
-  });
+// ── Inner Modal ───────────────────────────────────────────────────────────────
+const ContactModal = ({ open, onClose, onSubmit, current, submitting }) => {
+  const blank = { name: '', relation: '', phone: '', email: '', isTrusted: false, notes: '' };
+  const [form, setForm] = useState(blank);
 
   useEffect(() => {
-    fetchContacts();
-  }, []);
+    setForm(current
+      ? { name: current.name, relation: current.relation || '', phone: current.phone, email: current.email || '', isTrusted: current.isTrusted || false, notes: current.notes || '' }
+      : blank
+    );
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [current, open]);
 
-  const fetchContacts = async () => {
+  const handle = e => {
+    const v = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+    setForm(f => ({ ...f, [e.target.name]: v }));
+  };
+
+  if (!open) return null;
+
+  return (
+    <div className="sv-modal-overlay" onClick={e => e.target === e.currentTarget && !submitting && onClose()}>
+      <div className="sv-modal">
+        <div className="sv-modal-header">
+          <span className="sv-modal-title">{current ? 'Edit Contact' : 'Add Emergency Contact'}</span>
+          <button className="sv-modal-close" onClick={onClose} disabled={submitting}><XIcon /></button>
+        </div>
+        <div className="sv-modal-body">
+          <form onSubmit={e => { e.preventDefault(); onSubmit(form); }}>
+            <div className="sv-form-group">
+              <label className="sv-form-label">Contact Name *</label>
+              <input className="sv-form-input" name="name" required value={form.name} onChange={handle} placeholder="Jane Doe" />
+            </div>
+            <div className="sv-form-grid2">
+              <div className="sv-form-group">
+                <label className="sv-form-label">Relation</label>
+                <input className="sv-form-input" name="relation" value={form.relation} onChange={handle} placeholder="e.g. Spouse, Brother" />
+              </div>
+              <div className="sv-form-group">
+                <label className="sv-form-label">Phone *</label>
+                <input className="sv-form-input" name="phone" type="tel" required value={form.phone} onChange={handle} placeholder="+91 9876543210" />
+              </div>
+            </div>
+            <div className="sv-form-group">
+              <label className="sv-form-label">Email</label>
+              <input className="sv-form-input" name="email" type="email" value={form.email} onChange={handle} placeholder="jane@example.com" />
+            </div>
+            <label className="sv-checkbox-row" style={{ marginBottom: '1rem' }}>
+              <input type="checkbox" name="isTrusted" checked={form.isTrusted} onChange={handle} />
+              <div>
+                <p style={{ fontWeight: 600, fontSize: '0.88rem', color: '#e8f0fe', margin: 0 }}>Mark as Primary Trusted Contact</p>
+                <p style={{ fontSize: '0.78rem', color: '#7ea8cc', margin: 0 }}>Takes top priority during emergencies</p>
+              </div>
+            </label>
+            <div className="sv-modal-footer">
+              <button type="button" className="sv-btn sv-btn-ghost" onClick={onClose}>Cancel</button>
+              <button type="submit" className="sv-btn sv-btn-primary" disabled={submitting}>
+                {submitting ? <span className="sv-spinner"></span> : <PlusIcon />}
+                {current ? 'Update' : 'Save'} Contact
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ── Main ──────────────────────────────────────────────────────────────────────
+const Contacts = () => {
+  const [contacts, setContacts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [modalOpen, setModalOpen] = useState(false);
+  const [current, setCurrent] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => { fetch(); }, []);
+
+  const fetch = async () => {
+    try { const r = await api.get('/contacts'); setContacts(r.data); }
+    catch (e) { console.error(e); }
+    finally { setLoading(false); }
+  };
+
+  const openAdd  = () => { setCurrent(null); setModalOpen(true); };
+  const openEdit = (c) => { setCurrent(c); setModalOpen(true); };
+  const close    = () => !submitting && setModalOpen(false);
+
+  const handleSubmit = async (form) => {
+    setSubmitting(true);
     try {
-      const res = await api.get('/contacts');
-      setContacts(res.data);
-    } catch (error) {
-      console.error('Failed to fetch contacts', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const openModal = (contact = null) => {
-    if (contact) {
-      setCurrentContact(contact);
-      setFormData({
-        name: contact.name,
-        relation: contact.relation || '',
-        phone: contact.phone,
-        email: contact.email || '',
-        isTrusted: contact.isTrusted || false,
-        notes: contact.notes || ''
-      });
-    } else {
-      setCurrentContact(null);
-      setFormData({ name: '', relation: '', phone: '', email: '', isTrusted: false, notes: '' });
-    }
-    setIsModalOpen(true);
-  };
-
-  const handleInputChange = (e) => {
-    const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
-    setFormData({ ...formData, [e.target.name]: value });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    
-    try {
-      if (currentContact) {
-        // Update
-        const res = await api.put(`/contacts/${currentContact._id}`, formData);
-        setContacts(contacts.map(c => c._id === currentContact._id ? res.data : c));
+      if (current) {
+        const r = await api.put(`/contacts/${current._id}`, form);
+        setContacts(prev => prev.map(c => c._id === current._id ? r.data : c));
       } else {
-        // Create
-        const res = await api.post('/contacts', formData);
-        setContacts([res.data, ...contacts]);
+        const r = await api.post('/contacts', form);
+        setContacts(prev => [r.data, ...prev]);
       }
-      setIsModalOpen(false);
-    } catch (error) {
-      console.error('Attempt failed', error);
-      alert('Failed to save contact');
-    } finally {
-      setIsSubmitting(false);
-    }
+      setModalOpen(false);
+    } catch { alert('Failed to save contact'); }
+    finally { setSubmitting(false); }
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this contact?')) {
-      try {
-        await api.delete(`/contacts/${id}`);
-        setContacts(contacts.filter(c => c._id !== id));
-      } catch (error) {
-        console.error('Delete failed', error);
-      }
-    }
+    if (!window.confirm('Delete this contact?')) return;
+    try { await api.delete(`/contacts/${id}`); setContacts(prev => prev.filter(c => c._id !== id)); }
+    catch { alert('Delete failed'); }
   };
 
-  const filteredContacts = contacts.filter(contact => 
-    contact.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    (contact.relation && contact.relation.toLowerCase().includes(searchTerm.toLowerCase()))
+  const filtered = contacts.filter(c =>
+    c.name.toLowerCase().includes(search.toLowerCase()) ||
+    (c.relation || '').toLowerCase().includes(search.toLowerCase())
   );
 
+  const colorFor = (name) => {
+    const colors = ['#2a7fff', '#10b981', '#f43f5e', '#f59e0b', '#a78bfa', '#38bdf8'];
+    return colors[name.charCodeAt(0) % colors.length];
+  };
+
   return (
-    <div className="space-y-6 animate-in slide-in-from-bottom-8 fade-in duration-500">
-      
-      {/* Header Area */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-extrabold text-slate-800 dark:text-white flex items-center gap-3">
-            <Users className="text-blue-500" size={32} />
-            Emergency Contacts
-          </h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-1">Manage people to alert during an emergency.</p>
+    <div className="sv-page">
+      {/* Header */}
+      <div className="sv-page-header">
+        <div className="sv-page-title">
+          <div className="sv-page-title-icon" style={{ background: 'rgba(42,127,255,0.12)', border: '0.5px solid rgba(42,127,255,0.3)' }}>
+            <UsersIcon />
+          </div>
+          <div>
+            <h1>Emergency Contacts</h1>
+            <p>People to reach during an emergency — {contacts.length} saved</p>
+          </div>
         </div>
-        <button onClick={() => openModal()} className="btn-primary flex justify-center items-center gap-2">
-          <Plus size={18} /> Add Contact
+        <button className="sv-btn sv-btn-primary" onClick={openAdd}>
+          <PlusIcon /> Add Contact
         </button>
       </div>
 
-      {/* Search Bar */}
-      <div className="relative">
-        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <Search className="text-slate-400" size={20} />
-        </div>
-        <input
-          type="text"
-          placeholder="Search contacts by name or relation..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="input-field pl-10 bg-white"
-        />
+      {/* Search */}
+      <div className="sv-search-wrap">
+        <span className="sv-search-icon" style={{ color: '#3a6080' }}><SearchIcon /></span>
+        <input className="sv-search-input" placeholder="Search by name or relation…" value={search} onChange={e => setSearch(e.target.value)} />
       </div>
 
-      {/* List / Grid content */}
-      {isLoading ? (
-        <div className="flex justify-center py-20">
-          <Loader2 className="animate-spin text-blue-500" size={40} />
+      {/* Content */}
+      {loading ? (
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
+          <div className="sv-spinner" style={{ width: '36px', height: '36px', borderTopColor: '#2a7fff' }}></div>
         </div>
-      ) : filteredContacts.length === 0 ? (
-        <div className="text-center py-20 bg-white dark:bg-darkCard rounded-2xl border border-dashed border-slate-300 dark:border-slate-700">
-          <Users size={48} className="mx-auto text-slate-300 dark:text-slate-600 mb-4" />
-          <h3 className="text-lg font-medium text-slate-800 dark:text-white">No contacts found</h3>
-          <p className="text-slate-500 dark:text-slate-400 mt-1">Add your trusted emergency contacts here.</p>
-          <button onClick={() => openModal()} className="mt-4 btn-primary inline-flex items-center gap-2">
-            <Plus size={18} /> Add First Contact
-          </button>
+      ) : filtered.length === 0 ? (
+        <div className="sv-empty">
+          <div className="sv-empty-icon" style={{ background: 'rgba(42,127,255,0.1)', border: '0.5px solid rgba(42,127,255,0.3)' }}>
+            <UsersIcon />
+          </div>
+          <h3>{search ? 'No contacts found' : 'No contacts yet'}</h3>
+          <p>{search ? 'Try a different search term' : 'Add your trusted emergency contacts to the vault'}</p>
+          {!search && <button className="sv-btn sv-btn-primary" onClick={openAdd}><PlusIcon /> Add First Contact</button>}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredContacts.map((contact, idx) => (
-            <div 
-              key={contact._id} 
-              className="card relative group animate-in zoom-in-95 duration-300 delay-[50ms]"
-              style={{ animationDelay: `${idx * 50}ms` }}
-            >
-              
-              {/* Top actions hover */}
-              <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
-                <button onClick={() => openModal(contact)} className="p-1.5 text-slate-400 hover:text-blue-500 bg-white dark:bg-slate-700 rounded-full shadow-sm" title="Edit">
-                  <Edit2 size={16} />
-                </button>
-                <button onClick={() => handleDelete(contact._id)} className="p-1.5 text-slate-400 hover:text-red-500 bg-white dark:bg-slate-700 rounded-full shadow-sm" title="Delete">
-                  <Trash2 size={16} />
-                </button>
-              </div>
+        <div className="sv-grid-3">
+          {filtered.map((c, i) => {
+            const col = colorFor(c.name);
+            return (
+              <div className="sv-item-card" key={c._id} style={{ animationDelay: `${i * 60}ms` }}>
+                <div className="sv-item-actions">
+                  <button className="sv-action-btn sv-action-edit" onClick={() => openEdit(c)} title="Edit"><EditIcon /></button>
+                  <button className="sv-action-btn sv-action-del" onClick={() => handleDelete(c._id)} title="Delete"><TrashIcon /></button>
+                </div>
 
-              {/* Card Body */}
-              <div className="flex items-start gap-4">
-                <div className="h-12 w-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 text-xl font-bold">
-                  {contact.name.charAt(0).toUpperCase()}
+                {/* Avatar + Name */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.9rem', marginBottom: '1rem' }}>
+                  <div className="sv-avatar-sm" style={{ background: `${col}20`, border: `0.5px solid ${col}50`, color: col }}>
+                    {c.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <p style={{ fontWeight: 700, fontSize: '1rem', margin: 0, color: '#e8f0fe', paddingRight: '3rem' }}>{c.name}</p>
+                    <p style={{ fontSize: '0.8rem', color: col, margin: 0, fontWeight: 600 }}>{c.relation || 'Contact'}</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-lg font-bold text-slate-800 dark:text-white pr-12">{contact.name}</h3>
-                  <p className="text-sm font-medium text-blue-600 dark:text-blue-400">{contact.relation || 'Friend'}</p>
+
+                <div style={{ borderTop: '0.5px solid rgba(66,153,225,0.12)', paddingTop: '0.85rem' }}>
+                  <div className="sv-info-row"><PhoneIcon /><a href={`tel:${c.phone}`}>{c.phone}</a></div>
+                  {c.email && <div className="sv-info-row"><MailIcon /><a href={`mailto:${c.email}`}>{c.email}</a></div>}
                 </div>
-              </div>
-              
-              <div className="mt-5 space-y-3">
-                <div className="flex items-center gap-3 text-sm text-slate-600 dark:text-slate-300">
-                  <Phone size={16} className="text-slate-400" />
-                  <span>{contact.phone}</span>
-                </div>
-                {contact.email && (
-                  <div className="flex items-center gap-3 text-sm text-slate-600 dark:text-slate-300">
-                    <Mail size={16} className="text-slate-400" />
-                    <span className="truncate">{contact.email}</span>
+
+                {c.isTrusted && (
+                  <div style={{
+                    marginTop: '0.85rem', display: 'flex', alignItems: 'center', gap: '5px',
+                    color: '#f59e0b', fontSize: '0.75rem', fontWeight: 600,
+                    fontFamily: "'Space Mono', monospace"
+                  }}>
+                    <StarIcon /> PRIMARY TRUSTED
                   </div>
                 )}
               </div>
-
-              {contact.isTrusted && (
-                <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-700 flex items-center gap-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-                  <UserCheck size={14} />
-                  Primary Trusted Contact
-                </div>
-              )}
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
-      {/* Modal Form */}
-      <Modal 
-        isOpen={isModalOpen} 
-        onClose={() => !isSubmitting && setIsModalOpen(false)}
-        title={currentContact ? 'Edit Contact' : 'Add New Contact'}
-      >
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="label-text">Contact Name *</label>
-            <input 
-              type="text" name="name" required value={formData.name} onChange={handleInputChange} 
-              className="input-field" placeholder="Jane Doe" 
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="label-text">Relation</label>
-              <input 
-                type="text" name="relation" value={formData.relation} onChange={handleInputChange} 
-                className="input-field" placeholder="e.g. Spouse, Brother" 
-              />
-            </div>
-            <div>
-              <label className="label-text">Phone *</label>
-              <input 
-                type="tel" name="phone" required value={formData.phone} onChange={handleInputChange} 
-                className="input-field" placeholder="+91 9876543210" 
-              />
-            </div>
-          </div>
-          <div>
-            <label className="label-text">Email</label>
-            <input 
-              type="email" name="email" value={formData.email} onChange={handleInputChange} 
-              className="input-field" placeholder="jane@example.com" 
-            />
-          </div>
-          
-          <label className="flex items-center gap-3 p-3 border border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:bg-lightBase dark:hover:bg-slate-700/50 transition-colors">
-            <input 
-              type="checkbox" name="isTrusted" checked={formData.isTrusted} onChange={handleInputChange} 
-              className="w-5 h-5 rounded text-blue-600 focus:ring-blue-500" 
-            />
-            <div>
-              <p className="font-semibold text-sm text-slate-800 dark:text-white">Mark as Trusted Contact</p>
-              <p className="text-xs text-slate-500 dark:text-slate-400">Trusted contacts take priority in emergencies</p>
-            </div>
-          </label>
-
-          <div className="pt-4 flex justify-end gap-3">
-            <button type="button" onClick={() => setIsModalOpen(false)} className="btn-secondary">Cancel</button>
-            <button type="submit" disabled={isSubmitting} className="btn-primary flex items-center gap-2">
-              {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
-              {currentContact ? 'Update' : 'Save'} Contact
-            </button>
-          </div>
-        </form>
-      </Modal>
-
+      <ContactModal
+        open={modalOpen} onClose={close}
+        onSubmit={handleSubmit} current={current}
+        submitting={submitting}
+      />
     </div>
   );
 };
