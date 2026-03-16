@@ -1,0 +1,1405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SafeVault | Enterprise-Grade Security</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  
+  <style>
+    /* CSS Reset & Variables */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    :root {
+      --bg-main: #020b18;
+      --bg-panel-1: #030f20;
+      --bg-panel-2: #061628;
+      
+      --accent-blue: #1a6cf0;
+      --bright-blue: #2a7fff;
+      --cyan-high: #38bdf8;
+      
+      --text-primary: #e8f0fe;
+      --text-muted: #7ea8cc;
+      --text-subtle: #3a6080;
+      
+      --glass-bg: rgba(6, 22, 48, 0.72);
+      --border-thin: rgba(66, 153, 225, 0.18);
+      --border-focus: rgba(42, 127, 255, 0.5);
+      
+      --font-ui: 'Sora', sans-serif;
+      --font-mono: 'Space Mono', monospace;
+      
+      --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+      --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+    }
+    
+    body {
+      font-family: var(--font-ui);
+      background-color: var(--bg-main);
+      color: var(--text-primary);
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+    
+    /* Layout */
+    .split-layout {
+      display: flex;
+      height: 100vh;
+      width: 100%;
+    }
+    
+    .left-panel {
+      flex: 1.1;
+      background-color: var(--bg-panel-1);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 4rem 10%;
+      border-right: 0.5px solid var(--border-thin);
+    }
+    
+    .right-panel {
+      flex: 0.9;
+      background-color: var(--bg-panel-2);
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+    
+    @media (max-width: 900px) {
+      .left-panel { display: none; }
+      .right-panel { flex: 1; padding: 1.5rem; }
+    }
+    
+    /* Left Panel Decor */
+    .glow-overlay {
+      position: absolute;
+      width: 150%;
+      height: 150%;
+      top: -25%;
+      left: -25%;
+      background: radial-gradient(circle at center, rgba(26, 108, 240, 0.08) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 1;
+    }
+    
+    .left-content {
+      position: relative;
+      z-index: 2;
+      max-width: 580px;
+    }
+    
+    /* Logo Box */
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      margin-bottom: 3rem;
+    }
+    
+    .logo-box {
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, var(--accent-blue), var(--bright-blue));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 24px rgba(42, 127, 255, 0.4);
+    }
+    
+    .logo-box svg {
+      width: 28px;
+      height: 28px;
+      fill: none;
+      stroke: white;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    
+    .tag-mono {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--cyan-high);
+      background: rgba(56, 189, 248, 0.1);
+      padding: 0.4rem 0.8rem;
+      border-radius: 4px;
+      border: 0.5px solid rgba(56, 189, 248, 0.3);
+    }
+    
+    /* Typography Left Panel */
+    h1 {
+      font-size: 3.5rem;
+      line-height: 1.1;
+      font-weight: 600;
+      letter-spacing: -1.5px;
+      margin-bottom: 1.5rem;
+    }
+    
+    h1 span {
+      background: linear-gradient(135deg, var(--cyan-high), var(--bright-blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .subtitle {
+      font-size: 1.125rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 4rem;
+      max-width: 480px;
+    }
+    
+    /* Features */
+    .features {
+      display: flex;
+      flex-direction: column;
+      gap: 1.8rem;
+    }
+    
+    .feature-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 1.25rem;
+    }
+    
+    .feature-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: rgba(6, 22, 48, 0.8);
+      border: 0.5px solid var(--border-thin);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    
+    .feature-icon svg {
+      width: 20px;
+      height: 20px;
+      stroke: var(--bright-blue);
+      fill: none;
+    }
+    
+    .feature-text h3 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-bottom: 0.3rem;
+      color: var(--text-primary);
+    }
+    
+    .feature-text p {
+      font-size: 0.9rem;
+      color: var(--text-subtle);
+      line-height: 1.5;
+    }
+    
+    /* Footer Left Panel */
+    .left-footer {
+      position: absolute;
+      bottom: 2.5rem;
+      left: 10%;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-subtle);
+      z-index: 2;
+    }
+    
+    /* Right Panel - Three.js Canvas */
+    #canvas-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    
+    /* Form Container (Glass Card) */
+    .form-container {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      max-width: 440px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 0.5px solid var(--border-thin);
+      border-radius: 20px;
+      padding: 2.8rem 2.6rem;
+      box-shadow: 0 0 80px rgba(26, 108, 240, 0.08), 0 24px 64px rgba(0, 0, 0, 0.5);
+      overflow: hidden;
+    }
+    
+    .form-container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.5), transparent);
+    }
+    
+    /* Panel Logic */
+    .panel {
+      display: none;
+      animation: fadeIn 0.4s var(--ease-out) forwards;
+    }
+    
+    .panel.active {
+      display: block;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Form Elements */
+    .panel-header {
+      margin-bottom: 2rem;
+    }
+    
+    .panel-header h2 {
+      font-size: 1.75rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    
+    .panel-header p {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+    }
+    
+    .input-group {
+      margin-bottom: 1.25rem;
+      position: relative;
+    }
+    
+    .input-label {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    
+    .input-icon {
+      position: absolute;
+      left: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+    
+    .input-icon svg {
+      width: 18px;
+      height: 18px;
+      stroke: var(--text-subtle);
+      fill: none;
+      transition: stroke 0.3s ease;
+    }
+    
+    .input-field {
+      width: 100%;
+      height: 46px;
+      background: rgba(6, 22, 48, 0.8);
+      border: 0.5px solid var(--border-thin);
+      border-radius: 10px;
+      padding: 0 14px 0 42px;
+      color: var(--text-primary);
+      font-family: var(--font-ui);
+      font-size: 0.95rem;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+    
+    .input-field::placeholder {
+      color: var(--text-subtle);
+    }
+    
+    .input-field:focus {
+      border-color: var(--bright-blue);
+      box-shadow: 0 0 0 3px rgba(26, 108, 240, 0.2);
+    }
+    
+    .input-field:focus + .input-icon svg {
+      stroke: var(--bright-blue);
+    }
+    
+    .input-field.error {
+      border-color: #ef4444;
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+    }
+    
+    .input-field.error + .input-icon svg {
+      stroke: #ef4444;
+    }
+    
+    .error-msg {
+      display: none;
+      color: #ef4444;
+      font-size: 0.8rem;
+      margin-top: 0.4rem;
+      font-weight: 500;
+    }
+    
+    .eye-btn {
+      position: absolute;
+      right: 14px;
+      background: none;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 4px;
+    }
+    
+    .eye-btn svg {
+      width: 18px;
+      height: 18px;
+      stroke: var(--text-subtle);
+      fill: none;
+      transition: stroke 0.2s;
+    }
+    
+    .eye-btn:hover svg {
+      stroke: var(--text-muted);
+    }
+    
+    /* Options Row */
+    .options-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: -0.25rem;
+      margin-bottom: 2rem;
+    }
+    
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+    
+    .checkbox-group input {
+      accent-color: var(--bright-blue);
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+    
+    .checkbox-group span {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    
+    .text-link {
+      font-size: 0.85rem;
+      color: var(--bright-blue);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s;
+      cursor: pointer;
+    }
+    
+    .text-link:hover {
+      color: var(--cyan-high);
+      text-decoration: underline;
+    }
+    
+    /* Buttons */
+    .btn-primary {
+      width: 100%;
+      height: 48px;
+      background: linear-gradient(135deg, var(--accent-blue), #0d55cc);
+      border: none;
+      border-radius: 11px;
+      color: white;
+      font-family: var(--font-ui);
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 16px rgba(26, 108, 240, 0.4);
+    }
+    
+    .btn-primary:active {
+      transform: translateY(1px);
+    }
+    
+    /* Spinner */
+    .spinner {
+      display: none;
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 0.8s linear infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .btn-primary.loading .btn-text { display: none; }
+    .btn-primary.loading .spinner { display: block; }
+    .btn-primary.loading { pointer-events: none; opacity: 0.9; }
+    
+    /* Divider */
+    .divider {
+      display: flex;
+      align-items: center;
+      text-align: center;
+      margin: 1.5rem 0;
+      font-size: 0.8rem;
+      color: var(--text-subtle);
+    }
+    
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      border-bottom: 0.5px solid var(--border-thin);
+    }
+    
+    .divider::before { margin-right: 15px; }
+    .divider::after { margin-left: 15px; }
+    
+    /* Alt Buttons row */
+    .alt-buttons {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    
+    .btn-alt {
+      height: 46px;
+      background: rgba(6, 22, 48, 0.5);
+      border: 0.5px solid var(--border-thin);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+    
+    .btn-alt svg {
+      width: 20px;
+      height: 20px;
+      fill: var(--text-primary);
+      transition: fill 0.2s;
+    }
+    
+    .btn-alt:hover {
+      background: rgba(42, 127, 255, 0.1);
+      border-color: rgba(42, 127, 255, 0.4);
+    }
+    
+    .btn-alt:hover svg {
+      fill: var(--bright-blue);
+    }
+    
+    /* Custom SVG rules for alt buttons */
+    .btn-alt.google svg path { fill: currentColor; }
+    
+    .bottom-link {
+      text-align: center;
+      margin-top: 2rem;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+    
+    /* Special Components */
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 500;
+      margin-bottom: 2rem;
+      transition: color 0.2s;
+      cursor: pointer;
+    }
+    
+    .back-link:hover { color: var(--text-primary); }
+    .back-link svg { width: 16px; height: 16px; stroke: currentColor; fill: none; }
+    
+    /* Password Strength */
+    .pwd-strength {
+      display: flex;
+      gap: 4px;
+      margin-top: 8px;
+    }
+    
+    .pwd-segment {
+      height: 4px;
+      border-radius: 2px;
+      background: rgba(255,255,255,0.1);
+      flex: 1;
+      transition: background 0.3s;
+    }
+    
+    /* Passkey specific */
+    .passkey-icon-lg {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: rgba(42, 127, 255, 0.1);
+      border: 1px solid var(--bright-blue);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 2rem;
+      box-shadow: 0 0 30px rgba(42, 127, 255, 0.2);
+    }
+    
+    .passkey-icon-lg svg {
+      width: 32px;
+      height: 32px;
+      fill: var(--bright-blue);
+    }
+    
+    /* OTP Grid */
+    .otp-grid {
+      display: flex;
+      gap: 10px;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+    }
+    
+    .otp-input {
+      width: 46px;
+      height: 52px;
+      background: rgba(6, 22, 48, 0.8);
+      border: 0.5px solid var(--border-thin);
+      border-radius: 8px;
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: 1.3rem;
+      color: var(--text-primary);
+      outline: none;
+      transition: all 0.2s;
+    }
+    
+    .otp-input:focus {
+      border-color: var(--bright-blue);
+      box-shadow: 0 0 0 3px rgba(26, 108, 240, 0.2);
+    }
+    
+    /* Dashboard specific */
+    .success-icon-lg {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid #10b981;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.5rem;
+      box-shadow: 0 0 30px rgba(16, 185, 129, 0.2);
+    }
+    
+    .success-icon-lg svg { width: 36px; height: 36px; stroke: #10b981; fill: none; stroke-width: 2; }
+    
+    .status-card {
+      background: rgba(6, 22, 48, 0.4);
+      border: 0.5px solid rgba(255,255,255,0.05);
+      border-radius: 12px;
+      padding: 1rem;
+      margin: 1.5rem 0 2rem;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+    }
+    
+    .status-row { display: flex; justify-content: space-between; margin-bottom: 6px; }
+    .status-row:last-child { margin-bottom: 0; }
+    .status-val.green { color: #10b981; }
+    .status-val.blue { color: var(--cyan-high); }
+    
+    /* Toast Notif */
+    .toast-container {
+      position: fixed;
+      top: 24px;
+      right: -400px;
+      background: rgba(3, 15, 32, 0.95);
+      backdrop-filter: blur(12px);
+      border: 0.5px solid var(--border-thin);
+      border-radius: 12px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      z-index: 100;
+      transition: right 0.5s var(--ease-out);
+    }
+    
+    .toast-container.show {
+      right: 24px;
+    }
+    
+    .toast-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .toast-dot.green { background: #10b981; box-shadow: 0 0 8px #10b981; }
+    .toast-dot.yellow { background: #f59e0b; box-shadow: 0 0 8px #f59e0b; }
+    .toast-dot.red { background: #ef4444; box-shadow: 0 0 8px #ef4444; }
+    
+    .toast-msg { font-size: 0.9rem; font-weight: 500; }
+  </style>
+  
+  <!-- Content Security Policy to allow JS and ThreeJS via CDN -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data:;">
+</head>
+<body>
+
+  <!-- Toast Notification -->
+  <div class="toast-container" id="toast">
+    <div class="toast-dot green" id="toast-dot"></div>
+    <div class="toast-msg" id="toast-msg">Notification message here</div>
+  </div>
+
+  <div class="split-layout">
+    
+    <!-- Left Branding Panel -->
+    <div class="left-panel">
+      <div class="glow-overlay"></div>
+      
+      <div class="left-content">
+        <div class="logo-container">
+          <div class="logo-box">
+            <svg viewBox="0 0 24 24">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              <path d="M12 8v4M12 16h.01" stroke-width="2.5" />
+            </svg>
+          </div>
+          <span class="tag-mono">Enterprise-Grade Security</span>
+        </div>
+        
+        <h1>Your <span>Digital Fortress</span> Awaits You</h1>
+        <p class="subtitle">Securely manage your encrypted assets, identity credentials, and operational secrets with zero-knowledge architecture.</p>
+        
+        <div class="features">
+          <div class="feature-row">
+            <div class="feature-icon">
+              <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+            </div>
+            <div class="feature-text">
+              <h3>AES-256 Encryption</h3>
+              <p>Military-grade encryption for all data at rest and in transit.</p>
+            </div>
+          </div>
+          
+          <div class="feature-row">
+            <div class="feature-icon">
+              <!-- Eye Off / Zero Knowledge -->
+              <svg viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+            </div>
+            <div class="feature-text">
+              <h3>Zero-Knowledge Architecture</h3>
+              <p>We cannot read or access your vault. Only you hold the keys.</p>
+            </div>
+          </div>
+          
+          <div class="feature-row">
+            <div class="feature-icon">
+              <!-- Activity / Threat -->
+              <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+            </div>
+            <div class="feature-text">
+              <h3>Real-Time Threat Detection</h3>
+              <p>Automated anomaly tracking with instant lockdown protocols.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="left-footer">
+        &copy; 2025 SafeVault Inc. &mdash; SOC2 Type II Certified
+      </div>
+    </div>
+    
+    <!-- Right Logic Panel -->
+    <div class="right-panel">
+      <!-- Three.js Canvas Container -->
+      <div id="canvas-container"></div>
+      
+      <!-- Forms Container -->
+      <div class="form-container">
+        
+        <!-- 1. Login Panel -->
+        <div id="panel-login" class="panel active">
+          <div class="panel-header">
+            <h2>Welcome Back</h2>
+            <p>Enter your credentials to access your vault</p>
+          </div>
+          
+          <form id="form-login" onsubmit="handleLoginSubmit(event)">
+            <div class="input-group">
+              <label class="input-label">Email Address</label>
+              <div class="input-wrapper">
+                <div class="input-icon">
+                  <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                </div>
+                <input type="email" id="login-email" class="input-field" placeholder="admin@acme.corp" required>
+              </div>
+              <div class="error-msg" id="err-login-email">Please enter a valid email</div>
+            </div>
+            
+            <div class="input-group">
+              <label class="input-label">Master Password</label>
+              <div class="input-wrapper">
+                <div class="input-icon">
+                  <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                </div>
+                <input type="password" id="login-pwd" class="input-field" placeholder="••••••••" required>
+                <button type="button" class="eye-btn" onclick="togglePwd('login-pwd')">
+                  <svg id="eye-login-pwd" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                </button>
+              </div>
+              <div class="error-msg" id="err-login-pwd">Password is required</div>
+            </div>
+            
+            <div class="options-row">
+              <label class="checkbox-group">
+                <input type="checkbox" id="remember-me">
+                <span>Remember this device</span>
+              </label>
+              <a class="text-link" onclick="showPanel('panel-forgot')">Forgot password?</a>
+            </div>
+            
+            <button type="submit" class="btn-primary" id="btn-login">
+              <span class="btn-text">Sign In &rarr;</span>
+              <div class="spinner"></div>
+            </button>
+          </form>
+          
+          <div class="divider">Or continue with</div>
+          
+          <div class="alt-buttons">
+            <!-- Google -->
+            <button type="button" class="btn-alt google" onclick="handleSocial('Google')">
+              <svg viewBox="0 0 24 24">
+                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+              </svg>
+            </button>
+            <!-- Passkey -->
+            <button type="button" class="btn-alt" onclick="showPanel('panel-passkey')">
+              <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><circle cx="12" cy="11" r="3"></circle></svg>
+            </button>
+            <!-- Magic Link -->
+            <button type="button" class="btn-alt" title="Magic Link" onclick="showPanel('panel-magic')">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg>
+            </button>
+          </div>
+          
+          <div class="bottom-link">
+            Don't have an account? <a class="text-link" onclick="showPanel('panel-signup')">Create one free</a>
+          </div>
+        </div>
+        
+        <!-- 2. Forgot Password Panel -->
+        <div id="panel-forgot" class="panel">
+          <a class="back-link" onclick="showPanel('panel-login')">
+            <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            Back to login
+          </a>
+          <div class="panel-header">
+            <h2>Reset Password</h2>
+            <p>Enter your email to receive recovery instructions</p>
+          </div>
+          
+          <form id="form-forgot" onsubmit="handleForgotSubmit(event)">
+            <div class="input-group">
+              <label class="input-label">Email Address</label>
+              <div class="input-wrapper">
+                <div class="input-icon">
+                  <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                </div>
+                <input type="email" id="forgot-email" class="input-field" placeholder="admin@acme.corp" required>
+              </div>
+            </div>
+            
+            <button type="submit" class="btn-primary" id="btn-forgot" style="margin-top:2rem">
+              <span class="btn-text">Send Instructions</span>
+              <div class="spinner"></div>
+            </button>
+          </form>
+        </div>
+        
+        <!-- 2.1 Forgot Success Panel -->
+        <div id="panel-forgot-success" class="panel">
+           <div class="success-icon-lg" style="width:60px;height:60px">
+              <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+           </div>
+           <div class="panel-header" style="text-align:center">
+            <h2>Check your email</h2>
+            <p style="margin-top:1rem">We've sent password reset instructions to your address. Please check your spam folder if you don't see it.</p>
+          </div>
+          <button type="button" class="btn-primary" style="margin-top:1.5rem" onclick="showPanel('panel-login')">
+            Return to Login
+          </button>
+        </div>
+        
+        <!-- 3. Sign Up Panel -->
+        <div id="panel-signup" class="panel">
+          <a class="back-link" onclick="showPanel('panel-login')">
+            <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            Back
+          </a>
+          <div class="panel-header" style="margin-bottom:1.5rem">
+            <h2>Create Account</h2>
+            <p>Setup your digital fortress</p>
+          </div>
+          
+          <form id="form-signup" onsubmit="handleSignupSubmit(event)">
+            <div class="input-group">
+              <label class="input-label">Full Name</label>
+              <div class="input-wrapper">
+                <div class="input-icon">
+                  <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                </div>
+                <input type="text" id="reg-name" class="input-field" placeholder="John Doe" required>
+              </div>
+            </div>
+            
+            <div class="input-group">
+              <label class="input-label">Email</label>
+              <div class="input-wrapper">
+                <div class="input-icon">
+                  <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                </div>
+                <input type="email" id="reg-email" class="input-field" placeholder="john@acme.corp" required>
+              </div>
+            </div>
+            
+            <div class="input-group" style="margin-bottom: 2rem;">
+              <label class="input-label">Master Password</label>
+              <div class="input-wrapper">
+                <div class="input-icon">
+                  <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                </div>
+                <input type="password" id="reg-pwd" class="input-field" placeholder="••••••••" required oninput="checkStrength(this.value)">
+                <button type="button" class="eye-btn" onclick="togglePwd('reg-pwd')">
+                  <svg id="eye-reg-pwd" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                </button>
+              </div>
+              <!-- Str bar -->
+              <div class="pwd-strength" id="pwd-str-bar">
+                <div class="pwd-segment" id="seg-1"></div>
+                <div class="pwd-segment" id="seg-2"></div>
+                <div class="pwd-segment" id="seg-3"></div>
+                <div class="pwd-segment" id="seg-4"></div>
+              </div>
+            </div>
+            
+            <button type="submit" class="btn-primary" id="btn-signup">
+              <span class="btn-text">Create Free Account</span>
+              <div class="spinner"></div>
+            </button>
+          </form>
+        </div>
+        
+        <!-- 4. Magic Link Panel -->
+        <div id="panel-magic" class="panel">
+          <a class="back-link" onclick="showPanel('panel-login')">
+             <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+             Back
+          </a>
+          <div class="panel-header">
+            <h2>Magic Link</h2>
+            <p>Passwordless login via email link</p>
+          </div>
+          
+          <form id="form-magic" onsubmit="handleMagicSubmit(event)">
+            <div class="input-group mb-6">
+              <label class="input-label">Email Address</label>
+              <div class="input-wrapper">
+                <div class="input-icon">
+                  <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                </div>
+                <input type="email" id="magic-email" class="input-field" placeholder="admin@acme.corp" required>
+              </div>
+            </div>
+            
+             <button type="submit" class="btn-primary" id="btn-magic" style="margin-top:2rem">
+              <span class="btn-text">Send Magic Link</span>
+              <div class="spinner"></div>
+            </button>
+          </form>
+        </div>
+        
+        <!-- 5. Passkey Panel -->
+        <div id="panel-passkey" class="panel">
+          <a class="back-link" onclick="showPanel('panel-login')">
+             <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+             Back
+          </a>
+          
+          <div class="passkey-icon-lg">
+             <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+          </div>
+          
+          <div class="panel-header" style="text-align:center">
+            <h2>Passkey Auth</h2>
+            <p>Use your device biometrics (Touch ID / Face ID) or hardware key to securely log in.</p>
+          </div>
+          
+          <button type="button" class="btn-primary" id="btn-passkey" onclick="handlePasskeySubmit()" style="margin-top:1.5rem">
+            <span class="btn-text">Authenticate with Passkey</span>
+            <div class="spinner"></div>
+          </button>
+        </div>
+        
+        <!-- 6. OTP / 2FA Panel -->
+        <div id="panel-otp" class="panel">
+          <a class="back-link" onclick="showPanel('panel-login')">
+             <svg viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+             Back to login
+          </a>
+          <div class="panel-header">
+            <h2>Two-Factor Auth</h2>
+            <p>Enter the 6-digit code sent to your device</p>
+          </div>
+          
+          <form id="form-otp" onsubmit="handleOtpSubmit(event)">
+             <div class="otp-grid" id="otp-inputs">
+                <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" required>
+                <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" required>
+                <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" required>
+                <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" required>
+                <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" required>
+                <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" required>
+             </div>
+             
+             <div style="text-align:right; margin-bottom: 2rem;">
+               <a class="text-link" onclick="resendOtp()">Resend code</a>
+             </div>
+             
+             <button type="submit" class="btn-primary" id="btn-otp">
+              <span class="btn-text">Verify Identity</span>
+              <div class="spinner"></div>
+            </button>
+          </form>
+        </div>
+        
+        <!-- 7. Dashboard / Success Form -->
+        <div id="panel-dashboard" class="panel">
+          
+          <div class="success-icon-lg">
+             <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          </div>
+          
+          <div class="panel-header" style="text-align:center">
+            <h2 style="color:#10b981">Access Granted</h2>
+            <p>Welcome to SafeVault Admin Console</p>
+          </div>
+          
+          <div class="status-card">
+            <div class="status-row">
+               <span>SESSION:</span>
+               <span class="status-val green">ACTIVE</span>
+            </div>
+            <div class="status-row">
+               <span>ENCRYPTION:</span>
+               <span class="status-val blue">AES-256</span>
+            </div>
+            <div class="status-row">
+               <span>LOCATION:</span>
+               <span class="status-val">TRUSTED_LOC_1</span>
+            </div>
+          </div>
+          
+          <button type="button" class="btn-primary" style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444; margin-top:1rem" onclick="showPanel('panel-login')">
+             Sign Out
+          </button>
+        </div>
+        
+      </div>
+    </div>
+  </div>
+
+  <!-- Three.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  
+  <script>
+    /* =========================================
+       THREE.JS BACKGROUND ANIMATION
+       ========================================= */
+    const initThreeJS = () => {
+      const container = document.getElementById('canvas-container');
+      const scene = new THREE.Scene();
+      
+      const camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 1, 1000);
+      camera.position.z = 40;
+      
+      const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+      renderer.setSize(container.clientWidth, container.clientHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      container.appendChild(renderer.domElement);
+      
+      // Particles
+      const particleCount = 420;
+      const geometry = new THREE.BufferGeometry();
+      const positions = new Float32Array(particleCount * 3);
+      const velocities = [];
+      
+      const maxDist = 35;
+      
+      for(let i=0; i<particleCount; i++) {
+        // Position
+        positions[i*3] = (Math.random() - 0.5) * maxDist * 2;
+        positions[i*3+1] = (Math.random() - 0.5) * maxDist * 2;
+        positions[i*3+2] = (Math.random() - 0.5) * maxDist * 1.5;
+        
+        // Velocity
+        velocities.push({
+          x: (Math.random() - 0.5) * 0.05,
+          y: (Math.random() - 0.5) * 0.05,
+          z: (Math.random() - 0.5) * 0.05
+        });
+      }
+      
+      geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      
+      // Particle Material
+      const pMaterial = new THREE.PointsMaterial({
+        color: 0x2a7fff,
+        size: 0.22,
+        transparent: true,
+        opacity: 0.8
+      });
+      
+      const particles = new THREE.Points(geometry, pMaterial);
+      scene.add(particles);
+      
+      // Lines Connection
+      const lineMaterial = new THREE.LineBasicMaterial({
+        color: 0x2a7fff,
+        transparent: true,
+        opacity: 0.12
+      });
+      
+      const linesMesh = new THREE.LineSegments(new THREE.BufferGeometry(), lineMaterial);
+      scene.add(linesMesh);
+      
+      // Mouse interaction
+      let mouseX = 0;
+      let mouseY = 0;
+      let targetX = 0;
+      let targetY = 0;
+      const windowHalfX = window.innerWidth / 2;
+      const windowHalfY = window.innerHeight / 2;
+      
+      document.addEventListener('mousemove', (event) => {
+        mouseX = (event.clientX - windowHalfX) * 0.01;
+        mouseY = (event.clientY - windowHalfY) * 0.01;
+      });
+      
+      // Resize
+      window.addEventListener('resize', () => {
+        camera.aspect = container.clientWidth / container.clientHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(container.clientWidth, container.clientHeight);
+      });
+      
+      // Render Loop
+      const animate = () => {
+        requestAnimationFrame(animate);
+        
+        targetX = mouseX * 0.5;
+        targetY = mouseY * 0.5;
+        
+        camera.position.x += (targetX - camera.position.x) * 0.05;
+        camera.position.y += (-targetY - camera.position.y) * 0.05;
+        camera.lookAt(scene.position);
+        
+        const posAttr = particles.geometry.attributes.position;
+        const posArray = posAttr.array;
+        
+        // Update positions (bounce)
+        for(let i=0; i<particleCount; i++) {
+          posArray[i*3] += velocities[i].x;
+          posArray[i*3+1] += velocities[i].y;
+          posArray[i*3+2] += velocities[i].z;
+          
+          if(Math.abs(posArray[i*3]) > maxDist) velocities[i].x *= -1;
+          if(Math.abs(posArray[i*3+1]) > maxDist) velocities[i].y *= -1;
+          if(Math.abs(posArray[i*3+2]) > maxDist * 0.75) velocities[i].z *= -1;
+        }
+        posAttr.needsUpdate = true;
+        
+        // Update Connections
+        let maxConnections = 9;
+        const linePositions = [];
+        
+        for(let i=0; i<particleCount; i++) {
+          for(let j=i+1; j<particleCount; j++) {
+            const dx = posArray[i*3] - posArray[j*3];
+            const dy = posArray[i*3+1] - posArray[j*3+1];
+            const dz = posArray[i*3+2] - posArray[j*3+2];
+            const distSq = dx*dx + dy*dy + dz*dz;
+            
+            if(distSq < maxConnections) {
+              linePositions.push(
+                posArray[i*3], posArray[i*3+1], posArray[i*3+2],
+                posArray[j*3], posArray[j*3+1], posArray[j*3+2]
+              );
+            }
+          }
+        }
+        
+        linesMesh.geometry.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
+        
+        renderer.render(scene, camera);
+      };
+      
+      animate();
+    };
+
+    // Init Three JS
+    window.addEventListener('DOMContentLoaded', initThreeJS);
+
+
+    /* =========================================
+       UI LOGIC & FORMS
+       ========================================= */
+       
+    // Panel Navigation
+    function showPanel(panelId) {
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      document.getElementById(panelId).classList.add('active');
+      clearErrors();
+    }
+    
+    // Toast Notification
+    let toastTimeout;
+    function showToast(msg, type = 'green') {
+      const t = document.getElementById('toast');
+      const dot = document.getElementById('toast-dot');
+      const msgEl = document.getElementById('toast-msg');
+      
+      dot.className = `toast-dot ${type}`;
+      msgEl.innerText = msg;
+      
+      t.classList.add('show');
+      
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        t.classList.remove('show');
+      }, 3500);
+    }
+    
+    // Toggle Password Visibility
+    function togglePwd(inputId) {
+      const input = document.getElementById(inputId);
+      const icon = document.getElementById(`eye-${inputId}`);
+      
+      if(input.type === 'password') {
+        input.type = 'text';
+        icon.innerHTML = `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>`;
+      } else {
+        input.type = 'password';
+        icon.innerHTML = `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>`;
+      }
+    }
+    
+    // Error Handling
+    function showError(inputId, msg) {
+      const input = document.getElementById(inputId);
+      const errEl = document.getElementById(`err-${inputId}`);
+      if(!input || !errEl) return;
+      
+      input.classList.add('error');
+      errEl.innerText = msg;
+      errEl.style.display = 'block';
+    }
+    
+    function clearErrors() {
+      document.querySelectorAll('.input-field').forEach(el => el.classList.remove('error'));
+      document.querySelectorAll('.error-msg').forEach(el => el.style.display = 'none');
+    }
+    
+    // Setup OTP Inputs
+    const otpInputs = document.querySelectorAll('.otp-input');
+    otpInputs.forEach((input, index) => {
+       input.addEventListener('input', (e) => {
+         if(e.target.value.length === 1 && index < otpInputs.length - 1) {
+           otpInputs[index + 1].focus();
+         }
+       });
+       
+       input.addEventListener('keydown', (e) => {
+         if(e.key === 'Backspace' && !e.target.value && index > 0) {
+           otpInputs[index - 1].focus();
+           otpInputs[index - 1].value = '';
+         }
+       });
+    });
+    
+    function resendOtp() {
+      otpInputs.forEach(i => i.value = '');
+      otpInputs[0].focus();
+      showToast('New code sent securely', 'green');
+    }
+
+    // Password Strength
+    function checkStrength(pwd) {
+      let score = 0;
+      if (pwd.length >= 8) score++;
+      if (/[A-Z]/.test(pwd)) score++;
+      if (/[0-9]/.test(pwd)) score++;
+      if (/[^A-Za-z0-9]/.test(pwd)) score++;
+      
+      const s1 = document.getElementById('seg-1');
+      const s2 = document.getElementById('seg-2');
+      const s3 = document.getElementById('seg-3');
+      const s4 = document.getElementById('seg-4');
+      
+      // Reset
+      s1.style.background = 'rgba(255,255,255,0.1)';
+      s2.style.background = 'rgba(255,255,255,0.1)';
+      s3.style.background = 'rgba(255,255,255,0.1)';
+      s4.style.background = 'rgba(255,255,255,0.1)';
+      
+      if(score >= 1) s1.style.background = '#ef4444'; // Red
+      if(score >= 2) s2.style.background = '#f97316'; // Orange
+      if(score >= 3) s3.style.background = '#eab308'; // Yellow
+      if(score >= 4) s4.style.background = '#10b981'; // Green
+    }
+
+    // Simulate Button Loading state
+    async function simulateLoad(btnId, delayMs = 1500) {
+      const btn = document.getElementById(btnId);
+      btn.classList.add('loading');
+      return new Promise(res => setTimeout(() => {
+        btn.classList.remove('loading');
+        res();
+      }, delayMs));
+    }
+
+    // Handlers
+    async function handleLoginSubmit(e) {
+      e.preventDefault();
+      clearErrors();
+      
+      const email = document.getElementById('login-email').value;
+      const pwd = document.getElementById('login-pwd').value;
+      let valid = true;
+      
+      if(!email || !email.includes('@')) {
+        showError('login-email', 'Valid email required');
+        valid = false;
+      }
+      if(!pwd || pwd.length < 5) {
+        showError('login-pwd', 'Invalid credentials');
+        valid = false;
+      }
+      
+      if(!valid) return;
+      
+      // Fake MFA routing for demo purposes based on email
+      await simulateLoad('btn-login', 1200);
+      showPanel('panel-otp');
+    }
+    
+    async function handleForgotSubmit(e) {
+      e.preventDefault();
+      await simulateLoad('btn-forgot', 1400);
+      showPanel('panel-forgot-success');
+    }
+    
+    async function handleSignupSubmit(e) {
+      e.preventDefault();
+      const pwd = document.getElementById('reg-pwd').value;
+      if(pwd.length < 8) {
+         showToast('Password must be at least 8 chars', 'red');
+         return;
+      }
+      await simulateLoad('btn-signup', 1600);
+      showToast('Account initialized securely.', 'green');
+      setTimeout(() => showPanel('panel-login'), 1000);
+    }
+    
+    async function handleMagicSubmit(e) {
+      e.preventDefault();
+      await simulateLoad('btn-magic', 1400);
+      document.getElementById('magic-email').value = '';
+      showToast('Magic link sent successfully.', 'green');
+    }
+    
+    async function handlePasskeySubmit() {
+      await simulateLoad('btn-passkey', 1600);
+      showPanel('panel-dashboard');
+    }
+    
+    async function handleOtpSubmit(e) {
+      e.preventDefault();
+      let filled = true;
+      otpInputs.forEach(i => { if(!i.value) filled = false; });
+      if(!filled) {
+         showToast('Complete the 6-digit code', 'yellow');
+         return;
+      }
+      await simulateLoad('btn-otp', 1200);
+      showPanel('panel-dashboard');
+    }
+    
+    function handleSocial(provider) {
+      showToast(`${provider} auth requested via SAML proxy`, 'yellow');
+      setTimeout(() => {
+         showPanel('panel-dashboard');
+      }, 1800);
+    }
+
+  </script>
+</body>
+</html>
