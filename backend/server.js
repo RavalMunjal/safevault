@@ -15,7 +15,7 @@ console.log('connectDB() called, initializing express...');
 const app = express();
 
 // Middleware
-app.use(cors({ origin: ['http://localhost:3000', 'http://localhost:3001'] }));
+app.use(cors()); // Allow all origins for production (or configure to your frontend URL)
 app.use(express.json());
 
 // Routes
@@ -36,7 +36,7 @@ app.get('/', (req, res) => {
   res.json({ message: 'SafeVault API is running...' });
 });
 
-// Force server to strictly run on 5000, preventing React from hijacking the port env var
-const PORT = 5000;
+// Force server to strictly run on custom port or 5000
+const PORT = process.env.PORT || 5000;
 console.log('Starting app.listen...');
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
