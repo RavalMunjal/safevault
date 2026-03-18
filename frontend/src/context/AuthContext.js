@@ -10,10 +10,9 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is logged in on mount
     const userInfo = sessionStorage.getItem('user');
     const token = sessionStorage.getItem('token');
-    
+
     if (userInfo && token) {
       setUser(JSON.parse(userInfo));
     }
@@ -23,14 +22,20 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       const res = await api.post('/auth/login', { email, password });
+
       sessionStorage.setItem('user', JSON.stringify(res.data));
       sessionStorage.setItem('token', res.data.token);
       setUser(res.data);
-      return { success: true };
+
+      return {
+        success: true,
+        token: res.data.token,
+        user: res.data
+      };
     } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data?.message || 'Login failed' 
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Login failed'
       };
     }
   };
@@ -38,14 +43,20 @@ export const AuthProvider = ({ children }) => {
   const register = async (name, email, password) => {
     try {
       const res = await api.post('/auth/register', { name, email, password });
+
       sessionStorage.setItem('user', JSON.stringify(res.data));
       sessionStorage.setItem('token', res.data.token);
       setUser(res.data);
-      return { success: true };
+
+      return {
+        success: true,
+        token: res.data.token,
+        user: res.data
+      };
     } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data?.message || 'Registration failed' 
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Registration failed'
       };
     }
   };
