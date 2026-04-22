@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+/* eslint-disable no-unused-vars */ import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import * as THREE from 'three';
 import '../styles/PremiumLogin.css';
@@ -225,7 +225,7 @@ const Login = () => {
       showToast(`Initiating ${provider} authentication...`, 'yellow');
       
       console.log(`[DemoLogin] Fetching /api/auth/demo...`);
-      const res = await fetch('http://localhost:5000/api/auth/demo', { method: 'POST' });
+      const res = await fetch('https://safevault-tsrw.onrender.com/api/auth/demo', { method: 'POST' });
       
       if (res.ok) {
         console.log(`[DemoLogin] Response status:`, res.status);

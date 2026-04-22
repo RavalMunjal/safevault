@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+/* eslint-disable no-unused-vars */ import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
 import '../styles/PremiumProfile.css';
